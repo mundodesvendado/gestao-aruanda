@@ -9,6 +9,12 @@ export function Settings() {
   const { mediums, updateMedium } = useData();
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [settings, setSettings] = useState({
     profile: {
       name: user?.name || '',
@@ -62,6 +68,29 @@ export function Settings() {
       fromEmail: ''
     }
   });
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('As senhas não coincidem!');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      alert('A nova senha deve ter pelo menos 6 caracteres!');
+      return;
+    }
+
+    // Simular mudança de senha
+    alert('Senha alterada com sucesso!');
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setShowPasswordChange(false);
+  };
 
   const toggleMediumAdmin = (mediumId: string) => {
     const medium = mediums.find(m => m.id === mediumId);
@@ -401,7 +430,71 @@ CREATE POLICY "Permitir atualização para administradores" ON mediums
 
           {activeTab === 'security' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Configurações de Segurança</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Configurações de Segurança</h3>
+                <button
+                  onClick={() => setShowPasswordChange(true)}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                >
+                  Alterar Senha
+                </button>
+              </div>
+              
+              {showPasswordChange && (
+                <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">Alterar Senha do Administrador</h4>
+                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha Atual</label>
+                      <input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nova Senha</label>
+                      <input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmar Nova Senha</label>
+                      <input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordChange(false)}
+                        className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                      >
+                        Alterar Senha
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+              
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>

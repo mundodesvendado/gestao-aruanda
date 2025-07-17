@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 interface Medium {
   id: string;
   name: string;
+  email?: string;
   birthDate: string;
   address: string;
   neighborhood: string;
@@ -16,6 +17,7 @@ interface Medium {
   joinDate: string;
   exitDate?: string;
   canAdminister: boolean;
+  hasSystemAccess?: boolean;
 }
 
 interface FinancialRecord {

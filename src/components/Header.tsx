@@ -12,13 +12,16 @@ interface HeaderProps {
 
 export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   const { user, logout } = useAuth();
-  const { notifications } = useData();
+  const { notifications, markNotificationAsRead } = useData();
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const handleNotificationClick = (notificationId: string) => {
+    markNotificationAsRead(notificationId);
+  };
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDateTime(new Date());
@@ -96,12 +99,21 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   {notifications.slice(0, 5).map((notification) => (
-                    <div key={notification.id} className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                    <div 
+                      key={notification.id} 
+                      onClick={() => handleNotificationClick(notification.id)}
+                      className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                    >
                       <h4 className="font-medium text-gray-900 dark:text-white text-sm">{notification.title}</h4>
                       <p className="text-gray-600 dark:text-gray-300 text-xs mt-1">{notification.message}</p>
                       <p className="text-gray-400 text-xs mt-2">
                         {new Date(notification.date).toLocaleString('pt-BR')}
                       </p>
+                      {!notification.read && (
+                        <div className="flex justify-end mt-2">
+                          <span className="text-xs text-blue-600 dark:text-blue-400">Clique para marcar como lida</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
