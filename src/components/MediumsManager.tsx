@@ -11,6 +11,8 @@ export function MediumsManager() {
 
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
+    password: '',
     birthDate: '',
     address: '',
     neighborhood: '',
@@ -23,12 +25,15 @@ export function MediumsManager() {
     category: 'passista' as const,
     joinDate: new Date().toISOString().split('T')[0],
     exitDate: '',
-    canAdminister: false
+    canAdminister: false,
+    hasSystemAccess: false
   });
 
   const resetForm = () => {
     setFormData({
       name: '',
+      email: '',
+      password: '',
       birthDate: '',
       address: '',
       neighborhood: '',
@@ -41,7 +46,8 @@ export function MediumsManager() {
       category: 'passista',
       joinDate: new Date().toISOString().split('T')[0],
       exitDate: '',
-      canAdminister: false
+      canAdminister: false,
+      hasSystemAccess: false
     });
     setEditingMedium(null);
     setShowForm(false);
@@ -49,6 +55,20 @@ export function MediumsManager() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar email único se fornecido
+    if (formData.email) {
+      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const emailExists = existingUsers.find((u: any) => 
+        u.email === formData.email && (!editingMedium || u.mediumId !== editingMedium)
+      );
+      
+      if (emailExists) {
+        alert('Este email já está em uso!');
+        return;
+      }
+    }
+    
     const mediumData = {
       ...formData,
       exitDate: formData.status === 'inactive' && formData.exitDate ? formData.exitDate : undefined
@@ -56,16 +76,71 @@ export function MediumsManager() {
     
     if (editingMedium) {
       updateMedium(editingMedium, mediumData);
+      
+      // Atualizar usuário do sistema se existir
+      if (formData.hasSystemAccess && formData.email) {
+        const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const userIndex = existingUsers.findIndex((u: any) => u.mediumId === editingMedium);
+        
+        if (userIndex !== -1) {
+          existingUsers[userIndex] = {
+            ...existingUsers[userIndex],
+            name: formData.name,
+            email: formData.email,
+            mediumId: editingMedium
+          };
+          localStorage.setItem('users', JSON.stringify(existingUsers));
+        } else if (formData.password) {
+          // Criar novo usuário do sistema
+          const newUser = {
+            id: Date.now().toString(),
+            name: formData.name,
+            email: formData.email,
+            role: 'user',
+            isMedium: true,
+            mediumId: editingMedium,
+            createdAt: new Date().toISOString()
+          };
+          existingUsers.push(newUser);
+          localStorage.setItem('users', JSON.stringify(existingUsers));
+        }
+      }
     } else {
       addMedium(mediumData);
+      
+      // Criar usuário do sistema se solicitado
+      if (formData.hasSystemAccess && formData.email && formData.password) {
+        const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const newMediumId = Date.now().toString();
+        
+        const newUser = {
+          id: (Date.now() + 1).toString(),
+          name: formData.name,
+          email: formData.email,
+          role: 'user',
+          isMedium: true,
+          mediumId: newMediumId,
+          createdAt: new Date().toISOString()
+        };
+        
+        existingUsers.push(newUser);
+        localStorage.setItem('users', JSON.stringify(existingUsers));
+      }
     }
     resetForm();
   };
 
   const handleEdit = (medium: any) => {
+    // Buscar dados do usuário do sistema se existir
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const systemUser = existingUsers.find((u: any) => u.mediumId === medium.id);
+    
     setFormData({
       ...medium,
-      exitDate: medium.exitDate || ''
+      exitDate: medium.exitDate || '',
+      email: systemUser?.email || '',
+      password: '',
+      hasSystemAccess: !!systemUser
     });
     setEditingMedium(medium.id);
     setShowForm(true);
@@ -171,6 +246,15 @@ export function MediumsManager() {
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">{medium.name}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{medium.neighborhood}, {medium.city}</p>
+                        {(() => {
+                          const users = JSON.parse(localStorage.getItem('users') || '[]');
+                          const hasSystemAccess = users.find((u: any) => u.mediumId === medium.id);
+                          return hasSystemAccess && (
+                            <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-full mr-1">
+                              Sistema
+                            </span>
+                          );
+                        })()}
                         {medium.canAdminister && (
                           <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-2 py-1 rounded-full">
                             Admin
@@ -264,6 +348,49 @@ export function MediumsManager() {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-3">Acesso ao Sistema</h4>
+                <div className="flex items-center mb-3">
+                  <input
+                    type="checkbox"
+                    id="hasSystemAccess"
+                    checked={formData.hasSystemAccess}
+                    onChange={(e) => setFormData({...formData, hasSystemAccess: e.target.checked})}
+                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label htmlFor="hasSystemAccess" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Permitir acesso ao sistema
+                  </label>
+                </div>
+                
+                {formData.hasSystemAccess && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email para Login</label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        required={formData.hasSystemAccess}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {editingMedium ? 'Nova Senha (deixe vazio para manter)' : 'Senha'}
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        required={formData.hasSystemAccess && !editingMedium}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

@@ -364,13 +364,6 @@ export function Reports() {
             <Download size={16} />
             <span>Excel</span>
           </button>
-          <button
-            onClick={() => exportToPDF(activeReport)}
-            className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-orange-700 transition-all flex items-center space-x-2"
-          >
-            <Download size={16} />
-            <span>PDF</span>
-          </button>
         </div>
 
         {activeReport === 'mediums' && (
