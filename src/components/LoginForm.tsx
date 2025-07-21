@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, Star, Moon, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
+import { Eye, EyeOff, Star, Moon, Mail, Lock, User, Phone, MapPin, Building } from 'lucide-react';
 
 export function LoginForm() {
-  const { login, register, resetPassword, loading } = useAuth();
+  const { login, register, resetPassword, loading, temples } = useAuth();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,16 +16,32 @@ export function LoginForm() {
   const [state, setState] = useState('');
   const [country, setCountry] = useState('Brasil');
   const [zipCode, setZipCode] = useState('');
+  const [templeId, setTempleId] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const activeTemples = temples.filter(t => t.status === 'active');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (mode === 'login') {
-      await login(email, password, rememberMe);
+      // Master admin doesn't need temple selection
+      if (email === 'admin@gestaoaruanda.com.br') {
+        await login(email, password, undefined, rememberMe);
+      } else {
+        if (!templeId) {
+          alert('Por favor, selecione um templo para fazer login.');
+          return;
+        }
+        await login(email, password, templeId, rememberMe);
+      }
     } else if (mode === 'register') {
+      if (!templeId) {
+        alert('Por favor, selecione um templo para se cadastrar.');
+        return;
+      }
       if (password !== confirmPassword) {
         alert('As senhas não coincidem!');
         return;
@@ -40,7 +56,8 @@ export function LoginForm() {
         city,
         state,
         country,
-        zipCode
+        zipCode,
+        templeId
       });
     } else if (mode === 'forgot') {
       await resetPassword(email);
@@ -59,6 +76,7 @@ export function LoginForm() {
     setState('');
     setCountry('Brasil');
     setZipCode('');
+    setTempleId('');
     setRememberMe(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -235,6 +253,36 @@ export function LoginForm() {
             </div>
           </div>
 
+          {/* Temple selection - only show for non-master admin emails */}
+          {email !== 'admin@gestaoaruanda.com.br' && mode !== 'forgot' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Selecione o Templo
+              </label>
+              <div className="relative">
+                <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <select
+                  value={templeId}
+                  onChange={(e) => setTempleId(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  required
+                >
+                  <option value="">Escolha um templo...</option>
+                  {activeTemples.map(temple => (
+                    <option key={temple.id} value={temple.id}>
+                      {temple.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {activeTemples.length === 0 && (
+                <p className="text-sm text-red-600 mt-1">
+                  Nenhum templo ativo disponível. Entre em contato com o administrador.
+                </p>
+              )}
+            </div>
+          )}
+
           {mode !== 'forgot' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -357,6 +405,16 @@ export function LoginForm() {
               </button>
             </p>
           )}
+        </div>
+
+        {/* Demo credentials info */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="font-medium text-blue-900 mb-2">Credenciais de Demonstração:</h4>
+          <div className="text-sm text-blue-800 space-y-1">
+            <p><strong>Administrador Master:</strong></p>
+            <p>Email: admin@gestaoaruanda.com.br</p>
+            <p>Senha: 123@mudar</p>
+          </div>
         </div>
       </div>
     </div>

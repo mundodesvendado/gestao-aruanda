@@ -20,7 +20,7 @@ const menuItems = [
 ];
 
 export function Sidebar({ activeTab, setActiveTab, sidebarOpen }: SidebarProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isMasterAdmin } = useAuth();
 
   return (
     <aside className={`fixed left-0 top-16 bottom-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-40 ${
@@ -42,7 +42,8 @@ export function Sidebar({ activeTab, setActiveTab, sidebarOpen }: SidebarProps) 
               <item.icon size={20} />
               {sidebarOpen && (
                 <span className="flex-1 text-left">
-                  {item.id === 'settings' && !isAdmin() ? 'Meu Perfil' : item.label}
+                  {item.id === 'dashboard' && isMasterAdmin() ? 'Painel Master' :
+                   item.id === 'settings' && !isAdmin() ? 'Meu Perfil' : item.label}
                 </span>
               )}
             </button>

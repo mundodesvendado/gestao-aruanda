@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
+import { MasterAdminPanel } from './components/MasterAdminPanel';
 import { ReadOnlyDashboard } from './components/ReadOnlyDashboard';
 import { UserSettings } from './components/UserSettings';
 import { MediumsManager } from './components/MediumsManager';
@@ -24,7 +25,7 @@ import { DataProvider } from './contexts/DataContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 function AppContent() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isMasterAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -33,6 +34,11 @@ function AppContent() {
   }
 
   const renderContent = () => {
+    // Master admin gets special panel
+    if (isMasterAdmin() && activeTab === 'dashboard') {
+      return <MasterAdminPanel />;
+    }
+    
     switch (activeTab) {
       case 'dashboard':
         return isAdmin() ? <Dashboard /> : <ReadOnlyDashboard />;
