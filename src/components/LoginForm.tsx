@@ -407,15 +407,6 @@ export function LoginForm() {
           )}
         </div>
 
-        {/* Demo credentials info */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">Credenciais de Demonstração:</h4>
-          <div className="text-sm text-blue-800 space-y-1">
-            <p><strong>Administrador Master:</strong></p>
-            <p>Email: admin@gestaoaruanda.com.br</p>
-            <p>Senha: 123@mudar</p>
-          </div>
-        </div>
       </div>
     </div>
   );

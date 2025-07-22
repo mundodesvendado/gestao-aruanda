@@ -4,14 +4,14 @@ Sistema completo de gerenciamento para templos de Umbanda, desenvolvido com Reac
 
 ## 🚀 Funcionalidades
 
-- **Autenticação Segura**: Sistema completo de login, cadastro e recuperação de senha
+- **Autenticação Segura**: Sistema completo de login, cadastro e recuperação de senha com 2FA
 - **Gestão de Médiuns**: Cadastro completo com categorização e controle de status
 - **Sistema Financeiro**: Controle de receitas, despesas e fornecedores
 - **Calendário de Eventos**: Agendamento de giras, reuniões e cerimônias
 - **Relatórios Avançados**: Exportação em Excel e PDF
 - **Notificações Internas**: Sistema de comunicação entre administradores e médiuns
-- **Configurações SMTP**: Envio de notificações por email
-- **2FA**: Autenticação de dois fatores para maior segurança
+- **Sistema de Assinaturas**: Período de teste de 14 dias + cobrança mensal
+- **Multi-tenant**: Suporte a múltiplos templos
 - **Temas**: Modo claro e escuro
 - **Responsivo**: Interface adaptada para desktop e mobile
 
@@ -20,6 +20,8 @@ Sistema completo de gerenciamento para templos de Umbanda, desenvolvido com Reac
 - **Frontend**: React 18 + TypeScript
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
 - **Exportação**: XLSX + jsPDF
 - **Build**: Vite
 
@@ -27,6 +29,7 @@ Sistema completo de gerenciamento para templos de Umbanda, desenvolvido com Reac
 
 - Node.js 18+ 
 - npm ou yarn
+- Conta no Supabase (para produção)
 
 ## 🔧 Instalação
 
@@ -44,17 +47,24 @@ npm install
 3. Configure as variáveis de ambiente:
 ```bash
 cp .env.example .env
+# Configure as variáveis do Supabase no arquivo .env
 ```
 
-4. Execute em desenvolvimento:
+4. Configure o Supabase:
+```bash
+# Execute as migrations SQL no seu projeto Supabase
+# Arquivo: supabase/migrations/create_complete_schema.sql
+```
+
+5. Execute em desenvolvimento:
 ```bash
 npm run dev
 ```
 
-5. Para produção:
+6. Para produção:
 ```bash
 npm run build
-npm run start
+npm run preview
 ```
 
 ## 🌐 Implantação em VPS
@@ -168,11 +178,11 @@ pm2 restart gestao-aruanda
 ## 📱 Uso do Sistema
 
 ### Primeiro Acesso
-1. Acesse o sistema via navegador
-2. Crie uma conta de administrador
-3. Configure o perfil do templo
-4. Cadastre os médiuns
-5. Configure SMTP para notificações
+1. **Administrador Master**: admin@gestaoaruanda.com.br / 123@mudar
+2. Crie templos e administradores via painel master
+3. Administradores de templo podem cadastrar médiuns e usuários
+4. Período de teste de 14 dias para cada templo
+5. Após o teste, ativação via link de pagamento
 
 ### Funcionalidades Principais
 - **Dashboard**: Visão geral com métricas e aniversariantes
@@ -181,7 +191,17 @@ pm2 restart gestao-aruanda
 - **Financeiro**: Receitas, despesas e relatórios
 - **Eventos**: Calendário com diferentes tipos de eventos
 - **Relatórios**: Exportação em Excel e PDF
-- **Configurações**: Perfil, segurança, SMTP e personalização
+- **Configurações**: Perfil, dados do templo, cobrança e segurança
+
+### Níveis de Acesso
+- **Master Admin**: Acesso total, gerencia templos e administradores
+- **Admin Templo**: Gerencia seu templo, médiuns e dados
+- **Usuário/Médium**: Acesso de leitura e edição do próprio perfil
+
+### Sistema de Cobrança
+- **Período de Teste**: 14 dias gratuitos
+- **Assinatura Mensal**: R$ 47,00 via Kiwify
+- **Controle Automático**: Sistema monitora status da assinatura
 
 ## 🆘 Suporte
 

@@ -3,10 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { Plus, Edit2, Trash2, Search, Building, Users, UserPlus, Shield, Eye, EyeOff } from 'lucide-react';
 
 export function MasterAdminPanel() {
-  const { temples, addTemple, updateTemple, deleteTemple, addTempleAdmin, getTempleUsers } = useAuth();
+  const { temples, addTemple, updateTemple, deleteTemple, addTempleAdmin, updateTempleAdmin, deleteTempleAdmin, getTempleUsers } = useAuth();
   const [activeTab, setActiveTab] = useState('temples');
   const [showTempleForm, setShowTempleForm] = useState(false);
   const [showAdminForm, setShowAdminForm] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState<string | null>(null);
   const [editingTemple, setEditingTemple] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -87,11 +88,16 @@ export function MasterAdminPanel() {
   const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addTempleAdmin(adminFormData);
-      alert('Administrador cadastrado com sucesso!');
+      if (editingAdmin) {
+        await updateTempleAdmin(editingAdmin, adminFormData);
+        alert('Administrador atualizado com sucesso!');
+      } else {
+        await addTempleAdmin(adminFormData);
+        alert('Administrador cadastrado com sucesso!');
+      }
       resetAdminForm();
     } catch (error) {
-      alert('Erro ao cadastrar administrador: ' + (error as Error).message);
+      alert('Erro ao salvar administrador: ' + (error as Error).message);
     }
   };
 
@@ -108,6 +114,26 @@ export function MasterAdminPanel() {
         alert('Templo excluído com sucesso!');
       } catch (error) {
         alert('Erro ao excluir templo: ' + (error as Error).message);
+      }
+    }
+  };
+
+  const handleEditAdmin = (admin: any) => {
+    setAdminFormData({
+      ...admin,
+      password: '' // Don't pre-fill password for security
+    });
+    setEditingAdmin(admin.id);
+    setShowAdminForm(true);
+  };
+
+  const handleDeleteAdmin = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este administrador?')) {
+      try {
+        await deleteTempleAdmin(id);
+        alert('Administrador excluído com sucesso!');
+      } catch (error) {
+        alert('Erro ao excluir administrador: ' + (error as Error).message);
       }
     }
   };
@@ -251,6 +277,7 @@ export function MasterAdminPanel() {
                       <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Templo</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Role</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -276,6 +303,22 @@ export function MasterAdminPanel() {
                           }`}>
                             {user.active ? 'Ativo' : 'Inativo'}
                           </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleEditAdmin(user)}
+                              className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAdmin(user.id)}
+                              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -381,7 +424,9 @@ export function MasterAdminPanel() {
       {showAdminForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Novo Administrador de Templo</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              {editingAdmin ? 'Editar Administrador' : 'Novo Administrador de Templo'}
+            </h3>
             <form onSubmit={handleAdminSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -405,14 +450,16 @@ export function MasterAdminPanel() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha Provisória</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {editingAdmin ? 'Nova Senha (deixe vazio para manter)' : 'Senha Provisória'}
+                  </label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={adminFormData.password}
                       onChange={(e) => setAdminFormData({...adminFormData, password: e.target.value})}
                       className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      required
+                      required={!editingAdmin}
                     />
                     <button
                       type="button"
@@ -512,7 +559,7 @@ export function MasterAdminPanel() {
                   type="submit"
                   className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
                 >
-                  Cadastrar Administrador
+                  {editingAdmin ? 'Atualizar' : 'Cadastrar'} Administrador
                 </button>
               </div>
             </form>

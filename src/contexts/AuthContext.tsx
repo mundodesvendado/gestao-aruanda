@@ -52,6 +52,8 @@ interface AuthContextType {
   deleteTemple: (id: string) => Promise<void>;
   // User management
   addTempleAdmin: (userData: Omit<User, 'id' | 'createdAt'>) => Promise<void>;
+  updateTempleAdmin: (id: string, userData: Partial<User>) => Promise<void>;
+  deleteTempleAdmin: (id: string) => Promise<void>;
   promoteToAdmin: (userId: string) => Promise<void>;
   demoteFromAdmin: (userId: string) => Promise<void>;
   getTempleUsers: () => User[];
@@ -377,6 +379,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
+  const updateTempleAdmin = async (id: string, userData: Partial<User>) => {
+    if (!isMasterAdmin()) {
+      throw new Error('Acesso negado');
+    }
+    
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = existingUsers.map((u: any) => 
+      u.id === id ? { ...u, ...userData } : u
+    );
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const deleteTempleAdmin = async (id: string) => {
+    if (!isMasterAdmin()) {
+      throw new Error('Acesso negado');
+    }
+    
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = existingUsers.filter((u: any) => u.id !== id);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
   const promoteToAdmin = async (userId: string) => {
     if (!isAdmin()) {
       throw new Error('Acesso negado');
@@ -442,6 +466,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateTemple,
       deleteTemple,
       addTempleAdmin,
+      updateTempleAdmin,
+      deleteTempleAdmin,
       promoteToAdmin,
       demoteFromAdmin,
       getTempleUsers

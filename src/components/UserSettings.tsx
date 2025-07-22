@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Lock, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Save, Eye, EyeOff, Building } from 'lucide-react';
 
 export function UserSettings() {
-  const { user, updateUserProfile, changePassword, loading } = useAuth();
+  const { user, updateUserProfile, changePassword, loading, selectedTemple } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -61,9 +61,24 @@ export function UserSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Minhas Configurações</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Meu Perfil</h1>
         <p className="text-gray-600 dark:text-gray-400">Gerencie seus dados pessoais e configurações de conta</p>
       </div>
+
+      {/* Informações do templo */}
+      {selectedTemple && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center space-x-2">
+            <Building size={20} className="text-blue-600 dark:text-blue-400" />
+            <div>
+              <h3 className="font-medium text-blue-900 dark:text-blue-300">Templo: {selectedTemple.name}</h3>
+              <p className="text-sm text-blue-800 dark:text-blue-300">
+                Você está conectado como {user?.role === 'temple_admin' ? 'Administrador' : user?.isMedium ? 'Médium' : 'Usuário'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex border-b border-gray-200 dark:border-gray-700">
