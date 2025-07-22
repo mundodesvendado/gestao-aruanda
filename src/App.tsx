@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { MasterAdminPanel } from './components/MasterAdminPanel';
+import { TemplesManager } from './components/TemplesManager';
 import { ReadOnlyDashboard } from './components/ReadOnlyDashboard';
 import { UserSettings } from './components/UserSettings';
 import { MediumsManager } from './components/MediumsManager';
@@ -37,6 +38,10 @@ function AppContent() {
     // Master admin gets special panel
     if (isMasterAdmin() && activeTab === 'dashboard') {
       return <MasterAdminPanel />;
+    }
+    
+    if (isMasterAdmin() && activeTab === 'temples') {
+      return <TemplesManager />;
     }
     
     switch (activeTab) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { BarChart3, Users, DollarSign, Calendar, Settings, Star, Bell, FileText, Building2 } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Calendar, Settings, Star, Bell, FileText, Building2, Building } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -10,6 +10,7 @@ interface SidebarProps {
 
 const menuItems = [
   { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
+  { id: 'temples', icon: Building, label: 'Templos', masterOnly: true },
   { id: 'mediums', icon: Users, label: 'Médiuns' },
   { id: 'suppliers', icon: Building2, label: 'Fornecedores' },
   { id: 'financial', icon: DollarSign, label: 'Financeiro' },
@@ -20,7 +21,7 @@ const menuItems = [
 ];
 
 export function Sidebar({ activeTab, setActiveTab, sidebarOpen }: SidebarProps) {
-  const { isAdmin, isMasterAdmin } = useAuth();
+  const { isAdmin, isMasterAdmin, user } = useAuth();
 
   return (
     <aside className={`fixed left-0 top-16 bottom-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-40 ${
@@ -28,7 +29,13 @@ export function Sidebar({ activeTab, setActiveTab, sidebarOpen }: SidebarProps) 
     }`}>
       <div className="p-4">
         <nav className="space-y-2">
-          {menuItems.map((item) => (
+          {menuItems.map((item) => {
+            // Hide master-only items for non-master admins
+            if (item.masterOnly && !isMasterAdmin()) {
+              return null;
+            }
+            
+            return (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
@@ -47,7 +54,8 @@ export function Sidebar({ activeTab, setActiveTab, sidebarOpen }: SidebarProps) 
                 </span>
               )}
             </button>
-          ))}
+            );
+          })}
         </nav>
       </div>
     </aside>

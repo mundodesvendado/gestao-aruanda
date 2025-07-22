@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Lock, Save, Eye, EyeOff, Building, CreditCard, Calendar, AlertTriangle } from 'lucide-react';
+import { User, Lock, Save, Eye, EyeOff, Building, CreditCard, Calendar, AlertTriangle, Mail, Server } from 'lucide-react';
 
 export function Settings() {
-  const { user, updateUserProfile, changePassword, loading, selectedTemple, updateTemple } = useAuth();
+  const { user, updateUserProfile, changePassword, loading, selectedTemple, updateTemple, isMasterAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -19,6 +19,15 @@ export function Settings() {
     state: user?.state || '',
     country: user?.country || 'Brasil',
     zipCode: user?.zipCode || ''
+  });
+
+  const [smtpData, setSmtpData] = useState({
+    host: '',
+    port: '587',
+    user: '',
+    password: '',
+    secure: false,
+    from: ''
   });
 
   const [templeData, setTempleData] = useState({
@@ -51,6 +60,12 @@ export function Settings() {
     }
   };
 
+  const handleSmtpSave = () => {
+    // Save SMTP configuration (in production, this would be saved to database)
+    localStorage.setItem('smtp_config', JSON.stringify(smtpData));
+    alert('Configurações SMTP salvas com sucesso!');
+  };
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -79,6 +94,7 @@ export function Settings() {
   const tabs = [
     { id: 'profile', label: 'Meu Perfil', icon: User },
     { id: 'temple', label: 'Dados do Templo', icon: Building },
+    ...(isMasterAdmin() ? [{ id: 'smtp', label: 'Configurações SMTP', icon: Mail }] : []),
     { id: 'billing', label: 'Cobrança', icon: CreditCard },
     { id: 'password', label: 'Alterar Senha', icon: Lock }
   ];
@@ -305,6 +321,107 @@ export function Settings() {
                 >
                   <Save size={20} />
                   <span>Salvar Dados do Templo</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'smtp' && isMasterAdmin() && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Configurações SMTP</h3>
+              <p className="text-gray-600 dark:text-gray-400">Configure o servidor SMTP para envio de e-mails do sistema</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servidor SMTP</label>
+                  <div className="relative">
+                    <Server className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      value={smtpData.host}
+                      onChange={(e) => setSmtpData({...smtpData, host: e.target.value})}
+                      placeholder="smtp.gmail.com"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Porta</label>
+                  <input
+                    type="number"
+                    value={smtpData.port}
+                    onChange={(e) => setSmtpData({...smtpData, port: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Usuário SMTP</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="email"
+                      value={smtpData.user}
+                      onChange={(e) => setSmtpData({...smtpData, user: e.target.value})}
+                      placeholder="seu-email@gmail.com"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Senha SMTP</label>
+                  <input
+                    type="password"
+                    value={smtpData.password}
+                    onChange={(e) => setSmtpData({...smtpData, password: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">E-mail Remetente</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="email"
+                    value={smtpData.from}
+                    onChange={(e) => setSmtpData({...smtpData, from: e.target.value})}
+                    placeholder="noreply@gestaoaruanda.com.br"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="secure"
+                  checked={smtpData.secure}
+                  onChange={(e) => setSmtpData({...smtpData, secure: e.target.checked})}
+                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label htmlFor="secure" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Usar conexão segura (SSL/TLS)
+                </label>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h5 className="font-medium text-blue-900 dark:text-blue-300 mb-2">Configurações Recomendadas:</h5>
+                <div className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                  <p><strong>Gmail:</strong> smtp.gmail.com, porta 587, SSL ativado</p>
+                  <p><strong>Outlook:</strong> smtp-mail.outlook.com, porta 587, SSL ativado</p>
+                  <p><strong>Yahoo:</strong> smtp.mail.yahoo.com, porta 587, SSL ativado</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSmtpSave}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
+                >
+                  <Save size={20} />
+                  <span>Salvar Configurações SMTP</span>
                 </button>
               </div>
             </div>

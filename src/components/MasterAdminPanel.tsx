@@ -3,140 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { Plus, Edit2, Trash2, Search, Building, Users, UserPlus, Shield, Eye, EyeOff } from 'lucide-react';
 
 export function MasterAdminPanel() {
-  const { temples, addTemple, updateTemple, deleteTemple, addTempleAdmin, updateTempleAdmin, deleteTempleAdmin, getTempleUsers } = useAuth();
+  const { temples, getTempleUsers } = useAuth();
   const [activeTab, setActiveTab] = useState('temples');
-  const [showTempleForm, setShowTempleForm] = useState(false);
-  const [showAdminForm, setShowAdminForm] = useState(false);
-  const [editingAdmin, setEditingAdmin] = useState<string | null>(null);
-  const [editingTemple, setEditingTemple] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
-  const [templeFormData, setTempleFormData] = useState({
-    name: '',
-    address: '',
-    phone: '',
-    email: '',
-    status: 'active' as const,
-    subdomain: ''
-  });
-
-  const [adminFormData, setAdminFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    phone: '',
-    address: '',
-    neighborhood: '',
-    city: '',
-    state: '',
-    country: 'Brasil',
-    zipCode: '',
-    templeId: '',
-    role: 'temple_admin' as const,
-    active: true
-  });
-
-  const resetTempleForm = () => {
-    setTempleFormData({
-      name: '',
-      address: '',
-      phone: '',
-      email: '',
-      status: 'active',
-      subdomain: ''
-    });
-    setEditingTemple(null);
-    setShowTempleForm(false);
-  };
-
-  const resetAdminForm = () => {
-    setAdminFormData({
-      name: '',
-      email: '',
-      password: '',
-      phone: '',
-      address: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      country: 'Brasil',
-      zipCode: '',
-      templeId: '',
-      role: 'temple_admin',
-      active: true
-    });
-    setShowAdminForm(false);
-  };
-
-  const handleTempleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingTemple) {
-        await updateTemple(editingTemple, templeFormData);
-        alert('Templo atualizado com sucesso!');
-      } else {
-        await addTemple(templeFormData);
-        alert('Templo cadastrado com sucesso!');
-      }
-      resetTempleForm();
-    } catch (error) {
-      alert('Erro ao salvar templo: ' + (error as Error).message);
-    }
-  };
-
-  const handleAdminSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingAdmin) {
-        await updateTempleAdmin(editingAdmin, adminFormData);
-        alert('Administrador atualizado com sucesso!');
-      } else {
-        await addTempleAdmin(adminFormData);
-        alert('Administrador cadastrado com sucesso!');
-      }
-      resetAdminForm();
-    } catch (error) {
-      alert('Erro ao salvar administrador: ' + (error as Error).message);
-    }
-  };
-
-  const handleEditTemple = (temple: any) => {
-    setTempleFormData(temple);
-    setEditingTemple(temple.id);
-    setShowTempleForm(true);
-  };
-
-  const handleDeleteTemple = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este templo? Todos os dados relacionados serão perdidos.')) {
-      try {
-        await deleteTemple(id);
-        alert('Templo excluído com sucesso!');
-      } catch (error) {
-        alert('Erro ao excluir templo: ' + (error as Error).message);
-      }
-    }
-  };
-
-  const handleEditAdmin = (admin: any) => {
-    setAdminFormData({
-      ...admin,
-      password: '' // Don't pre-fill password for security
-    });
-    setEditingAdmin(admin.id);
-    setShowAdminForm(true);
-  };
-
-  const handleDeleteAdmin = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este administrador?')) {
-      try {
-        await deleteTempleAdmin(id);
-        alert('Administrador excluído com sucesso!');
-      } catch (error) {
-        alert('Erro ao excluir administrador: ' + (error as Error).message);
-      }
-    }
-  };
 
   const filteredTemples = temples.filter(temple =>
     temple.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -149,8 +19,8 @@ export function MasterAdminPanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Painel Master</h1>
-          <p className="text-gray-600 dark:text-gray-400">Gestão completa de templos e administradores</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Master</h1>
+          <p className="text-gray-600 dark:text-gray-400">Visão geral do sistema</p>
         </div>
         <div className="flex items-center space-x-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
           <Shield size={16} className="text-red-600 dark:text-red-400" />
@@ -158,414 +28,102 @@ export function MasterAdminPanel() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
-          <button
-            onClick={() => setActiveTab('temples')}
-            className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
-              activeTab === 'temples'
-                ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            <Building size={20} />
-            <span>Templos</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('admins')}
-            className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
-              activeTab === 'admins'
-                ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            <Users size={20} />
-            <span>Administradores</span>
-          </button>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total de Templos</p>
+              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{temples.length}</p>
+            </div>
+            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-800">
+              <Building className="text-blue-600 dark:text-blue-400" size={24} />
+            </div>
+          </div>
         </div>
 
-        <div className="p-6">
-          {activeTab === 'temples' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                      type="text"
-                      placeholder="Buscar templo..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowTempleForm(true)}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center space-x-2"
-                >
-                  <Plus size={16} />
-                  <span>Novo Templo</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTemples.map((temple) => (
-                  <div key={temple.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{temple.name}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{temple.address}</p>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">{temple.email}</p>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">{temple.phone}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleEditTemple(temple)}
-                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTemple(temple.id)}
-                          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        temple.status === 'active'
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                          : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                      }`}>
-                        {temple.status === 'active' ? 'Ativo' : 'Inativo'}
-                      </span>
-                      {temple.subdomain && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {temple.subdomain}.gestaoaruanda.com.br
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-xl border border-green-200 dark:border-green-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Templos Ativos</p>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {temples.filter(t => t.status === 'active').length}
+              </p>
             </div>
-          )}
-
-          {activeTab === 'admins' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Administradores de Templos</h3>
-                <button
-                  onClick={() => setShowAdminForm(true)}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center space-x-2"
-                >
-                  <UserPlus size={16} />
-                  <span>Novo Administrador</span>
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Nome</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Email</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Templo</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Role</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">{user.name}</td>
-                        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">{user.email}</td>
-                        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">{user.templeName || 'N/A'}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            user.role === 'temple_admin'
-                              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-                              : 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300'
-                          }`}>
-                            {user.role === 'temple_admin' ? 'Admin Templo' : 'Usuário'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            user.active
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                          }`}>
-                            {user.active ? 'Ativo' : 'Inativo'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleEditAdmin(user)}
-                              className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                            >
-                              <Edit2 size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteAdmin(user.id)}
-                              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="p-3 rounded-full bg-green-100 dark:bg-green-800">
+              <Building className="text-green-600 dark:text-green-400" size={24} />
             </div>
-          )}
+          </div>
+        </div>
+
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Total de Usuários</p>
+              <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{allUsers.length}</p>
+            </div>
+            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-800">
+              <Users className="text-purple-600 dark:text-purple-400" size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Administradores</p>
+              <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                {allUsers.filter(u => u.role === 'temple_admin').length}
+              </p>
+            </div>
+            <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-800">
+              <Shield className="text-orange-600 dark:text-orange-400" size={24} />
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Temple Form Modal */}
-      {showTempleForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              {editingTemple ? 'Editar Templo' : 'Novo Templo'}
-            </h3>
-            <form onSubmit={handleTempleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Templo</label>
-                <input
-                  type="text"
-                  value={templeFormData.name}
-                  onChange={(e) => setTempleFormData({...templeFormData, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endereço</label>
-                <input
-                  type="text"
-                  value={templeFormData.address}
-                  onChange={(e) => setTempleFormData({...templeFormData, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
-                  <input
-                    type="tel"
-                    value={templeFormData.phone}
-                    onChange={(e) => setTempleFormData({...templeFormData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resumo do Sistema</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Templos Recentes</h4>
+            <div className="space-y-2">
+              {temples.slice(-5).map((temple) => (
+                <div key={temple.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-900 dark:text-white">{temple.name}</span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    temple.status === 'active'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                  }`}>
+                    {temple.status === 'active' ? 'Ativo' : 'Inativo'}
+                  </span>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={templeFormData.email}
-                    onChange={(e) => setTempleFormData({...templeFormData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subdomínio</label>
-                  <input
-                    type="text"
-                    value={templeFormData.subdomain}
-                    onChange={(e) => setTempleFormData({...templeFormData, subdomain: e.target.value})}
-                    placeholder="ex: templo1"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                  <select
-                    value={templeFormData.status}
-                    onChange={(e) => setTempleFormData({...templeFormData, status: e.target.value as any})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="active">Ativo</option>
-                    <option value="inactive">Inativo</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={resetTempleForm}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
-                >
-                  {editingTemple ? 'Atualizar' : 'Cadastrar'}
-                </button>
-              </div>
-            </form>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Admin Form Modal */}
-      {showAdminForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              {editingAdmin ? 'Editar Administrador' : 'Novo Administrador de Templo'}
-            </h3>
-            <form onSubmit={handleAdminSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome Completo</label>
-                  <input
-                    type="text"
-                    value={adminFormData.name}
-                    onChange={(e) => setAdminFormData({...adminFormData, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={adminFormData.email}
-                    onChange={(e) => setAdminFormData({...adminFormData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {editingAdmin ? 'Nova Senha (deixe vazio para manter)' : 'Senha Provisória'}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={adminFormData.password}
-                      onChange={(e) => setAdminFormData({...adminFormData, password: e.target.value})}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      required={!editingAdmin}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+          
+          <div>
+            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Administradores Recentes</h4>
+            <div className="space-y-2">
+              {allUsers.filter(u => u.role === 'temple_admin').slice(-5).map((admin) => (
+                <div key={admin.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div>
+                    <span className="text-gray-900 dark:text-white">{admin.name}</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{admin.templeName}</p>
                   </div>
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    admin.active
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                  }`}>
+                    {admin.active ? 'Ativo' : 'Inativo'}
+                  </span>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Templo</label>
-                  <select
-                    value={adminFormData.templeId}
-                    onChange={(e) => setAdminFormData({...adminFormData, templeId: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    required
-                  >
-                    <option value="">Selecione um templo</option>
-                    {temples.filter(t => t.status === 'active').map(temple => (
-                      <option key={temple.id} value={temple.id}>{temple.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
-                  <input
-                    type="tel"
-                    value={adminFormData.phone}
-                    onChange={(e) => setAdminFormData({...adminFormData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CEP</label>
-                  <input
-                    type="text"
-                    value={adminFormData.zipCode}
-                    onChange={(e) => setAdminFormData({...adminFormData, zipCode: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endereço</label>
-                <input
-                  type="text"
-                  value={adminFormData.address}
-                  onChange={(e) => setAdminFormData({...adminFormData, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bairro</label>
-                  <input
-                    type="text"
-                    value={adminFormData.neighborhood}
-                    onChange={(e) => setAdminFormData({...adminFormData, neighborhood: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cidade</label>
-                  <input
-                    type="text"
-                    value={adminFormData.city}
-                    onChange={(e) => setAdminFormData({...adminFormData, city: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
-                  <input
-                    type="text"
-                    value={adminFormData.state}
-                    onChange={(e) => setAdminFormData({...adminFormData, state: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={resetAdminForm}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
-                >
-                  {editingAdmin ? 'Atualizar' : 'Cadastrar'} Administrador
-                </button>
-              </div>
-            </form>
+              ))}
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
