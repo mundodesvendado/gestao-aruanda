@@ -1,9 +1,14 @@
 import React from 'react';
 import { useData } from '../contexts/DataContext';
-import { Users, DollarSign, Calendar, TrendingUp, Star, Moon } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { Users, DollarSign, Calendar, TrendingUp, Star, Moon, UserCheck, UserX, Clock } from 'lucide-react';
 
 export function Dashboard() {
   const { mediums, financialRecords, events, suppliers } = useData();
+  const { getTempleUsers, approveUser, rejectUser, isAdmin } = useAuth();
+
+  // Usuários pendentes de aprovação
+  const pendingUsers = getTempleUsers().filter(u => !u.active && u.role === 'user');
 
   // Aniversariantes do mês
   const currentMonth = new Date().getMonth();
@@ -78,6 +83,26 @@ export function Dashboard() {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 5);
 
+  const handleApproveUser = async (userId: string) => {
+    try {
+      await approveUser(userId);
+      alert('Usuário aprovado com sucesso!');
+    } catch (error) {
+      alert('Erro ao aprovar usuário: ' + (error as Error).message);
+    }
+  };
+
+  const handleRejectUser = async (userId: string) => {
+    if (window.confirm('Tem certeza que deseja rejeitar este usuário? Esta ação não pode ser desfeita.')) {
+      try {
+        await rejectUser(userId);
+        alert('Usuário rejeitado com sucesso!');
+      } catch (error) {
+        alert('Erro ao rejeitar usuário: ' + (error as Error).message);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -90,6 +115,47 @@ export function Dashboard() {
           <Moon size={24} />
         </div>
       </div>
+
+      {/* Usuários Pendentes de Aprovação */}
+      {isAdmin() && pendingUsers.length > 0 && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+          <div className="flex items-center space-x-2 mb-4">
+            <Clock size={20} className="text-yellow-600 dark:text-yellow-400" />
+            <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-300">
+              Usuários Pendentes de Aprovação ({pendingUsers.length})
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {pendingUsers.map((user) => (
+              <div key={user.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">{user.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    Cadastrado em: {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleApproveUser(user.id)}
+                    className="p-2 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                    title="Aprovar usuário"
+                  >
+                    <UserCheck size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleRejectUser(user.id)}
+                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                    title="Rejeitar usuário"
+                  >
+                    <UserX size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (

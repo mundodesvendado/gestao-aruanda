@@ -120,6 +120,15 @@ export function TemplesManager() {
     }
   };
 
+  const handleSetTempleAdmin = async (templeId: string, mediumId: string) => {
+    try {
+      // Promover médium para administrador do templo
+      await promoteToAdmin(mediumId);
+      alert('Administrador do templo definido com sucesso!');
+    } catch (error) {
+      alert('Erro ao definir administrador: ' + (error as Error).message);
+    }
+  };
   const handleEditAdmin = (admin: any) => {
     setAdminFormData({
       ...admin,
@@ -221,6 +230,9 @@ export function TemplesManager() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTemples.map((temple) => {
                   const { isTrialExpired, daysRemaining } = getTempleStatus(temple);
+                  const templeUsers = allUsers.filter(u => u.templeId === temple.id);
+                  const templeMediums = templeUsers.filter(u => u.isMedium);
+                  const templeAdmin = templeUsers.find(u => u.role === 'temple_admin');
                   
                   return (
                     <div key={temple.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -230,6 +242,11 @@ export function TemplesManager() {
                           <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{temple.address}</p>
                           <p className="text-gray-600 dark:text-gray-400 text-sm">{temple.email}</p>
                           <p className="text-gray-600 dark:text-gray-400 text-sm">{temple.phone}</p>
+                          {templeAdmin && (
+                            <p className="text-sm text-purple-600 dark:text-purple-400 mt-2">
+                              <strong>Admin:</strong> {templeAdmin.name}
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
@@ -248,6 +265,30 @@ export function TemplesManager() {
                       </div>
                       
                       <div className="space-y-2">
+                        {templeMediums.length > 0 && !templeAdmin && (
+                          <div className="mb-3">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Definir Administrador do Templo:
+                            </label>
+                            <select
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleSetTempleAdmin(temple.id, e.target.value);
+                                  e.target.value = '';
+                                }
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                            >
+                              <option value="">Selecione um médium...</option>
+                              {templeMediums.map(medium => (
+                                <option key={medium.id} value={medium.id}>
+                                  {medium.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                        
                         <div className="flex items-center justify-between">
                           <span className={`px-2 py-1 text-xs rounded-full ${
                             temple.status === 'active'

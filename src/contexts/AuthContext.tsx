@@ -57,6 +57,8 @@ interface AuthContextType {
   promoteToAdmin: (userId: string) => Promise<void>;
   demoteFromAdmin: (userId: string) => Promise<void>;
   getTempleUsers: () => User[];
+  approveUser: (userId: string) => Promise<void>;
+  rejectUser: (userId: string) => Promise<void>;
 }
 
 interface RegisterData {
@@ -172,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     if (!foundUser.active) {
-      alert('Sua conta está inativa. Entre em contato com o administrador.');
+      alert('Sua conta ainda não foi aprovada pelo administrador do templo. Entre em contato para mais informações.');
       setLoading(false);
       return;
     }
@@ -238,7 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: 'user',
       templeId: userData.templeId,
       templeName: temple.name,
-      active: true,
+      active: false, // Usuários precisam ser aprovados pelo admin do templo
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString()
     };
@@ -247,13 +249,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const updatedUsers = [...existingUsers, newUser];
     localStorage.setItem('users', JSON.stringify(updatedUsers));
     
-    // Auto login the new user
-    setUser(newUser);
-    setSelectedTemple(temple);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    
     setLoading(false);
-    alert('Conta criada com sucesso!');
+    alert('Conta criada com sucesso! Aguarde a aprovação do administrador do templo para acessar o sistema.');
   };
 
   const resetPassword = async (email: string) => {
@@ -413,6 +410,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
+  const approveUser = async (userId: string) => {
+    if (!isAdmin()) {
+      throw new Error('Acesso negado');
+    }
+    
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = existingUsers.map((u: any) => 
+      u.id === userId ? { ...u, active: true } : u
+    );
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const rejectUser = async (userId: string) => {
+    if (!isAdmin()) {
+      throw new Error('Acesso negado');
+    }
+    
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = existingUsers.filter((u: any) => u.id !== userId);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
   const demoteFromAdmin = async (userId: string) => {
     if (!isAdmin()) {
       throw new Error('Acesso negado');
@@ -470,7 +488,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       deleteTempleAdmin,
       promoteToAdmin,
       demoteFromAdmin,
-      getTempleUsers
+      getTempleUsers,
+      approveUser,
+      rejectUser
     }}>
       {children}
     </AuthContext.Provider>
