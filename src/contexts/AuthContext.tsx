@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, templeId?: string, rememberMe: boolean = false) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     // Check for master admin credentials
     if (email === 'admin@gestaoaruanda.com.br' && password === '123@mudar') {
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (userData: RegisterData) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Find the temple
     const temple = temples.find(t => t.id === userData.templeId);

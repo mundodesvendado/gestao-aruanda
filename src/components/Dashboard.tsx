@@ -118,7 +118,7 @@ export function Dashboard() {
 
       {/* Usuários Pendentes de Aprovação */}
       {isAdmin() && pendingUsers.length > 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800 shadow-sm">
           <div className="flex items-center space-x-2 mb-4">
             <Clock size={20} className="text-yellow-600 dark:text-yellow-400" />
             <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-300">
@@ -138,14 +138,14 @@ export function Dashboard() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleApproveUser(user.id)}
-                    className="p-2 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                    className="p-2 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-all transform hover:scale-110"
                     title="Aprovar usuário"
                   >
                     <UserCheck size={16} />
                   </button>
                   <button
                     onClick={() => handleRejectUser(user.id)}
-                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all transform hover:scale-110"
                     title="Rejeitar usuário"
                   >
                     <UserX size={16} />

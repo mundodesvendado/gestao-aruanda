@@ -369,7 +369,7 @@ export function LoginForm() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-3">
           {mode === 'login' && (
             <p className="text-sm text-gray-600">
               Não tem cadastro?{' '}
@@ -404,6 +404,13 @@ export function LoginForm() {
                 Voltar ao login
               </button>
             </p>
+          )}
+          
+          {mode === 'login' && (
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-xs text-blue-800 font-medium">Credenciais de Demonstração:</p>
+              <p className="text-xs text-blue-700">Master: admin@gestaoaruanda.com.br / 123@mudar</p>
+            </div>
           )}
         </div>
 
